@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ANTIGRAVITY — Intelligence Commerciale Restaurants</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:       #2563EB;
+      --blue-light: #EFF6FF;
+      --blue-mid:   #BFDBFE;
+      --green:      #16A34A;
+      --green-bg:   #F0FDF4;
+      --green-text: #15803D;
+      --amber:      #D97706;
+      --amber-bg:   #FFFBEB;
+      --amber-text: #B45309;
+      --gray-50:    #F9FAFB;
+      --gray-100:   #F3F4F6;
+      --gray-200:   #E5E7EB;
+      --gray-300:   #D1D5DB;
+      --gray-400:   #9CA3AF;
+      --gray-500:   #6B7280;
+      --gray-700:   #374151;
+      --gray-900:   #111827;
+      --white:      #FFFFFF;
+      --radius:     8px;
+      --shadow-sm:  0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.04);
+      --shadow:     0 4px 12px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.04);
+    }
+
+    html, body { height: 100%; font-family: 'Inter', -apple-system, sans-serif; background: var(--gray-50); color: var(--gray-900); font-size: 14px; line-height: 1.5; }
+
+    /* ── Header ─────────────────────────────────────────────────────── */
+    .header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-200);
+      height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px;
+      gap: 24px;
+    }
+    .header-brand {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 15px; color: var(--gray-900);
+      letter-spacing: -.3px; white-space: nowrap;
+    }
+    .header-brand span {
+      background: var(--blue); color: var(--white);
+      padding: 2px 7px; border-radius: 4px; font-size: 11px;
+      font-weight: 600; letter-spacing: .5px;
+    }
+    .header-tabs {
+      display: flex; gap: 4px;
+    }
+    .tab {
+      padding: 5px 14px; border-radius: 6px; font-size: 13px; font-weight: 500;
+      cursor: pointer; border: 1px solid transparent;
+      color: var(--gray-500); transition: all .15s;
+    }
+    .tab:hover { background: var(--gray-100); color: var(--gray-700); }
+    .tab.active {
+      background: var(--blue-light); color: var(--blue);
+      border-color: var(--blue-mid);
+    }
+    .tab.soon {
+      color: var(--gray-300); cursor: default;
+    }
+    .header-stats {
+      display: flex; align-items: center; gap: 20px; white-space: nowrap;
+    }
+    .stat { display: flex; align-items: center; gap: 6px; }
+    .stat-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .stat-dot.green  { background: var(--green); }
+    .stat-dot.amber  { background: var(--amber); }
+    .stat-dot.gray   { background: var(--gray-300); }
+    .stat-label { font-size: 13px; color: var(--gray-500); }
+    .stat-value { font-size: 13px; font-weight: 600; color: var(--gray-900); }
+
+    /* ── Layout ─────────────────────────────────────────────────────── */
+    .layout {
+      display: flex; height: 100vh; padding-top: 56px;
+    }
+
+    /* ── List panel ─────────────────────────────────────────────────── */
+    .list-panel {
+      width: 360px; min-width: 360px;
+      background: var(--white);
+      border-right: 1px solid var(--gray-200);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .list-header {
+      padding: 16px 16px 12px;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .list-search {
+      position: relative;
+    }
+    .list-search input {
+      width: 100%; padding: 8px 12px 8px 34px;
+      border: 1px solid var(--gray-200); border-radius: 6px;
+      font-family: inherit; font-size: 13px; color: var(--gray-900);
+      background: var(--gray-50);
+      outline: none; transition: border-color .15s;
+    }
+    .list-search input:focus { border-color: var(--blue); background: var(--white); }
+    .list-search input::placeholder { color: var(--gray-400); }
+    .list-search-icon {
+      position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+      color: var(--gray-400); pointer-events: none;
+    }
+    .list-body { flex: 1; overflow-y: auto; padding: 8px 0; }
+    .list-section-label {
+      padding: 8px 16px 4px;
+      font-size: 11px; font-weight: 600; color: var(--gray-400);
+      letter-spacing: .6px; text-transform: uppercase;
+    }
+
+    /* ── Restaurant card (list) ─────────────────────────────────────── */
+    .resto-card {
+      padding: 12px 16px; cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: background .1s;
+      position: relative;
+    }
+    .resto-card:hover { background: var(--gray-50); }
+    .resto-card.active {
+      background: var(--blue-light); border-left-color: var(--blue);
+    }
+    .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+    .card-name { font-weight: 600; font-size: 13px; color: var(--gray-900); line-height: 1.3; }
+    .card-meta { font-size: 12px; color: var(--gray-500); margin-top: 1px; }
+    .badge {
+      flex-shrink: 0; font-size: 11px; font-weight: 600;
+      padding: 2px 8px; border-radius: 20px; white-space: nowrap;
+    }
+    .badge-maintenant { background: var(--green-bg); color: var(--green-text); }
+    .badge-surveiller { background: var(--amber-bg); color: var(--amber-text); }
+    .progress-row { display: flex; align-items: center; gap: 8px; }
+    .progress-bar {
+      flex: 1; height: 4px; background: var(--gray-200); border-radius: 2px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: var(--blue); border-radius: 2px; transition: width .3s;
+    }
+    .progress-fill.full { background: var(--green); }
+    .progress-text { font-size: 11px; font-weight: 500; color: var(--gray-500); white-space: nowrap; }
+
+    /* ── Detail panel ───────────────────────────────────────────────── */
+    .detail-panel {
+      flex: 1; overflow-y: auto; padding: 32px;
+      background: var(--gray-50);
+    }
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100%; gap: 12px; color: var(--gray-400);
+    }
+    .empty-icon { font-size: 40px; opacity: .4; }
+    .empty-text { font-size: 14px; font-weight: 500; }
+    .empty-sub  { font-size: 13px; }
+
+    .detail-card {
+      background: var(--white); border-radius: var(--radius);
+      border: 1px solid var(--gray-200); box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    /* Detail header */
+    .detail-head {
+      padding: 24px 28px 20px;
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .detail-head-top {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+      margin-bottom: 4px;
+    }
+    .detail-name { font-size: 20px; font-weight: 700; color: var(--gray-900); letter-spacing: -.3px; }
+    .detail-meta { font-size: 13px; color: var(--gray-500); }
+    .detail-badge { font-size: 12px; font-weight: 600; padding: 4px 12px; border-radius: 20px; }
+    .detail-score-row {
+      display: flex; align-items: center; gap: 12px; margin-top: 14px;
+    }
+    .detail-score-bar {
+      flex: 1; height: 6px; background: var(--gray-100); border-radius: 3px; overflow: hidden;
+    }
+    .detail-score-fill { height: 100%; border-radius: 3px; transition: width .4s; }
+    .detail-score-fill.blue  { background: var(--blue); }
+    .detail-score-fill.green { background: var(--green); }
+    .detail-score-label { font-size: 13px; font-weight: 600; color: var(--gray-700); white-space: nowrap; }
+
+    /* Conditions grid */
+    .conditions-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 0; border-top: 1px solid var(--gray-100);
+    }
+    .conditions-col { padding: 24px 28px; }
+    .conditions-col:first-child { border-right: 1px solid var(--gray-100); }
+    .conditions-title {
+      font-size: 10px; font-weight: 700; color: var(--gray-400);
+      letter-spacing: .8px; text-transform: uppercase; margin-bottom: 16px;
+    }
+    .condition-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--gray-50);
+    }
+    .condition-item:last-child { border-bottom: none; }
+    .cond-icon {
+      flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin-top: 1px;
+    }
+    .cond-icon.met   { background: var(--green-bg); }
+    .cond-icon.unmet { background: var(--gray-100); }
+    .cond-icon svg   { width: 11px; height: 11px; }
+    .cond-body { flex: 1; min-width: 0; }
+    .cond-label {
+      font-size: 13px; font-weight: 500; color: var(--gray-900); line-height: 1.3;
+    }
+    .cond-label.unmet {
+      text-decoration: line-through; color: var(--gray-400);
+    }
+    .cond-detail {
+      font-size: 12px; color: var(--gray-500); margin-top: 2px; line-height: 1.4;
+    }
+    .cond-detail.unmet { color: var(--gray-300); }
+
+    /* Detail footer */
+    .detail-footer {
+      display: flex; align-items: center; gap: 0;
+      border-top: 1px solid var(--gray-100);
+      background: var(--gray-50);
+    }
+    .footer-item {
+      flex: 1; padding: 14px 20px;
+      border-right: 1px solid var(--gray-200);
+      min-width: 0;
+    }
+    .footer-item:last-child { border-right: none; }
+    .footer-label {
+      font-size: 10px; font-weight: 600; color: var(--gray-400);
+      letter-spacing: .6px; text-transform: uppercase; margin-bottom: 3px;
+    }
+    .footer-value {
+      font-size: 13px; font-weight: 500; color: var(--gray-900); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .footer-value.blue { color: var(--blue); }
+
+    /* Action buttons */
+    .detail-actions {
+      display: flex; gap: 10px; padding: 16px 28px;
+      border-top: 1px solid var(--gray-100);
+    }
+    .btn {
+      padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 500;
+      cursor: pointer; border: none; font-family: inherit; transition: all .15s;
+      display: flex; align-items: center; gap: 6px; text-decoration: none;
+    }
+    .btn-primary { background: var(--blue); color: var(--white); }
+    .btn-primary:hover { background: #1D4ED8; }
+    .btn-outline { background: var(--white); color: var(--gray-700); border: 1px solid var(--gray-200); }
+    .btn-outline:hover { background: var(--gray-50); border-color: var(--gray-300); }
+    .btn-ghost  { background: transparent; color: var(--gray-500); border: 1px solid transparent; }
+    .btn-ghost:hover { background: var(--gray-100); color: var(--gray-700); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--gray-300); }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .conditions-grid { grid-template-columns: 1fr; }
+      .conditions-col:first-child { border-right: none; border-bottom: 1px solid var(--gray-100); }
+      .header-stats { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────────────────────────────────── -->
+<header class="header">
+  <div class="header-brand">
+    ANTIGRAVITY <span>v2</span>
+  </div>
+
+  <nav class="header-tabs">
+    <div class="tab active" onclick="setService('click_collect')">Click &amp; Collect</div>
+    <div class="tab soon" title="Bientôt disponible">KDS</div>
+    <div class="tab soon" title="Bientôt disponible">Bornes</div>
+  </nav>
+
+  <div class="header-stats">
+    <div class="stat">
+      <div class="stat-dot gray"></div>
+      <span class="stat-value">{{ total }}</span>
+      <span class="stat-label">restaurants</span>
+    </div>
+    <div class="stat">
+      <div class="stat-dot green"></div>
+      <span class="stat-value">{{ n_maintenant }}</span>
+      <span class="stat-label">prêts maintenant</span>
+    </div>
+    <div class="stat">
+      <div class="stat-dot amber"></div>
+      <span class="stat-value">{{ n_surveiller }}</span>
+      <span class="stat-label">à surveiller</span>
+    </div>
+  </div>
+</header>
+
+<!-- ── Layout ───────────────────────────────────────────────────────────────── -->
+<div class="layout">
+
+  <!-- List panel -->
+  <aside class="list-panel">
+    <div class="list-header">
+      <div class="list-search">
+        <svg class="list-search-icon" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Rechercher un restaurant…" oninput="filterList(this.value)" />
+      </div>
+    </div>
+
+    <div class="list-body" id="listBody">
+      <!-- Maintenant -->
+      {% set maintenant_list = restaurants | selectattr("cc.badge", "equalto", "maintenant") | list %}
+      {% if maintenant_list %}
+      <div class="list-section-label">Prêts maintenant — {{ maintenant_list | length }}</div>
+      {% for r in maintenant_list %}
+      <div class="resto-card" data-id="{{ r.id }}" data-name="{{ r.title | lower }}" data-category="{{ r.category | lower }}" onclick="selectResto('{{ r.id }}')">
+        <div class="card-top">
+          <div>
+            <div class="card-name">{{ r.title }}</div>
+            <div class="card-meta">{{ r.category }} · {{ r.city }}</div>
+          </div>
+          <span class="badge badge-maintenant">Maintenant</span>
+        </div>
+        <div class="progress-row">
+          <div class="progress-bar">
+            <div class="progress-fill {% if r.cc.total_met == r.cc.total %}full{% endif %}"
+                 style="width: {{ (r.cc.total_met / r.cc.total * 100) | int }}%"></div>
+          </div>
+          <span class="progress-text">{{ r.cc.total_met }} / {{ r.cc.total }}</span>
+        </div>
+      </div>
+      {% endfor %}
+      {% endif %}
+
+      <!-- À surveiller -->
+      {% set surveiller_list = restaurants | selectattr("cc.badge", "equalto", "surveiller") | list %}
+      {% if surveiller_list %}
+      <div class="list-section-label" style="margin-top: 8px;">À surveiller — {{ surveiller_list | length }}</div>
+      {% for r in surveiller_list %}
+      <div class="resto-card" data-id="{{ r.id }}" data-name="{{ r.title | lower }}" data-category="{{ r.category | lower }}" onclick="selectResto('{{ r.id }}')">
+        <div class="card-top">
+          <div>
+            <div class="card-name">{{ r.title }}</div>
+            <div class="card-meta">{{ r.category }} · {{ r.city }}</div>
+          </div>
+          <span class="badge badge-surveiller">À surveiller</span>
+        </div>
+        <div class="progress-row">
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ (r.cc.total_met / r.cc.total * 100) | int }}%"></div>
+          </div>
+          <span class="progress-text">{{ r.cc.total_met }} / {{ r.cc.total }}</span>
+        </div>
+      </div>
+      {% endfor %}
+      {% endif %}
+    </div>
+  </aside>
+
+  <!-- Detail panel -->
+  <main class="detail-panel" id="detailPanel">
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">◎</div>
+      <div class="empty-text">Sélectionnez un restaurant</div>
+      <div class="empty-sub">{{ total }} établissements qualifiés sur cette zone</div>
+    </div>
+
+    <div id="detailContent" style="display:none">
+      <!-- Contenu injecté par JS -->
+    </div>
+  </main>
+
+</div>
+
+<script>
+  const DATA = {{ restaurants_json | safe }};
+  const byId = {};
+  DATA.forEach(r => byId[r.id] = r);
+
+  let activeId = null;
+
+  function selectResto(id) {
+    if (activeId === id) return;
+    activeId = id;
+
+    // Active state in list
+    document.querySelectorAll('.resto-card').forEach(c => c.classList.remove('active'));
+    const card = document.querySelector(`.resto-card[data-id="${CSS.escape(id)}"]`);
+    if (card) card.classList.add('active');
+
+    renderDetail(byId[id]);
+  }
+
+  function renderDetail(r) {
+    const cc = r.cc;
+    const isGreen = cc.badge === 'maintenant';
+    const badgeClass   = isGreen ? 'badge-maintenant' : 'badge-surveiller';
+    const badgeLabel   = isGreen ? 'Prêt maintenant' : 'À surveiller';
+    const fillClass    = cc.total_met === cc.total ? 'green' : 'blue';
+    const fillPct      = Math.round(cc.total_met / cc.total * 100);
+
+    const mapsUrl = (r.latitude && r.longitude)
+      ? `https://www.google.com/maps?q=${r.latitude},${r.longitude}`
+      : `https://www.google.com/maps/search/${encodeURIComponent(r.title + ' ' + r.address)}`;
+
+    const phoneHref = r.phone ? `tel:${r.phone.replace(/\s/g,'')}` : null;
+
+    function condHTML(c) {
+      const metClass   = c.met ? 'met'   : 'unmet';
+      const labelClass = c.met ? '' : 'unmet';
+      const detailClass = c.met ? '' : 'unmet';
+      const icon = c.met
+        ? `<svg viewBox="0 0 12 12" fill="none" stroke="#16A34A" stroke-width="2"><polyline points="2,6 5,9 10,3"/></svg>`
+        : `<svg viewBox="0 0 12 12" fill="none" stroke="#9CA3AF" stroke-width="2"><line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/></svg>`;
+      return `
+        <div class="condition-item">
+          <div class="cond-icon ${metClass}">${icon}</div>
+          <div class="cond-body">
+            <div class="cond-label ${labelClass}">${c.label}</div>
+            <div class="cond-detail ${detailClass}">${c.detail}</div>
+          </div>
+        </div>`;
+    }
+
+    const profilHTML  = cc.profil.map(condHTML).join('');
+    const timingHTML  = cc.timing.map(condHTML).join('');
+
+    const html = `
+      <div class="detail-card">
+
+        <div class="detail-head">
+          <div class="detail-head-top">
+            <div>
+              <div class="detail-name">${r.title}</div>
+              <div class="detail-meta">${r.category} · ${r.city}</div>
+            </div>
+            <span class="badge detail-badge ${badgeClass}">${badgeLabel}</span>
+          </div>
+          <div class="detail-score-row">
+            <div class="detail-score-bar">
+              <div class="detail-score-fill ${fillClass}" style="width:${fillPct}%"></div>
+            </div>
+            <span class="detail-score-label">${cc.total_met} condition${cc.total_met > 1 ? 's' : ''} sur ${cc.total}</span>
+          </div>
+        </div>
+
+        <div class="conditions-grid">
+          <div class="conditions-col">
+            <div class="conditions-title">Profil Click &amp; Collect</div>
+            ${profilHTML}
+          </div>
+          <div class="conditions-col">
+            <div class="conditions-title">Pourquoi maintenant</div>
+            ${timingHTML}
+          </div>
+        </div>
+
+        <!-- Contexte établissement -->
+        ${(() => {
+          const ctx = cc.contexte;
+          if (!ctx) return '';
+          const items = [
+            { label: 'Prix moyen', value: ctx.price_label || '—', warn: ctx.price_tier === 'high' },
+            { label: 'Réservation Google', value: ctx.reservation ? 'Oui' : 'Non', warn: ctx.reservation },
+            { label: 'Sur TheFork', value: ctx.thefork ? 'Oui' : 'Non', warn: ctx.thefork },
+          ];
+          const sitDown = ctx.sit_down;
+          return `
+          <div style="margin:0;padding:14px 28px;background:${sitDown ? '#FFFBEB' : '#F9FAFB'};border-top:1px solid ${sitDown ? '#FDE68A' : '#F3F4F6'}">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+              <span style="font-size:10px;font-weight:700;color:${sitDown ? '#92400E' : '#9CA3AF'};letter-spacing:.6px;text-transform:uppercase">
+                Contexte établissement
+              </span>
+              ${sitDown ? `<span style="font-size:11px;background:#FEF3C7;color:#92400E;padding:1px 8px;border-radius:10px;font-weight:600">Profil sit-down détecté</span>` : ''}
+            </div>
+            <div style="display:flex;gap:24px">
+              ${items.map(i => `
+                <div>
+                  <div style="font-size:10px;color:#9CA3AF;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">${i.label}</div>
+                  <div style="font-size:13px;font-weight:500;color:${i.warn ? '#92400E' : '#374151'}">${i.value}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>`;
+        })()}
+
+        <div class="detail-footer">
+          <div class="footer-item">
+            <div class="footer-label">Téléphone</div>
+            <div class="footer-value">${r.phone || '—'}</div>
+          </div>
+          <div class="footer-item">
+            <div class="footer-label">Adresse</div>
+            <div class="footer-value" style="display:flex;align-items:center;gap:6px;">
+              <span title="${r.address || ''}">${r.address || '—'}</span>
+              ${r.address ? `<button onclick="navigator.clipboard.writeText('${r.address.replace(/'/g,"\\'")}').then(()=>{this.style.color='var(--green)';setTimeout(()=>this.style.color='',1200)})" title="Copier l'adresse" style="background:none;border:none;cursor:pointer;padding:0;color:var(--gray-400);flex-shrink:0;display:flex;align-items:center;">
+                <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </button>` : ''}
+            </div>
+          </div>
+          <div class="footer-item">
+            <div class="footer-label">Meilleur moment</div>
+            <div class="footer-value blue">${cc.best_call}</div>
+          </div>
+        </div>
+
+        <div class="detail-actions">
+          ${phoneHref ? `<a href="${phoneHref}" class="btn btn-primary">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.14 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.05 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 17z"/></svg>
+            Appeler
+          </a>` : ''}
+          <a href="${mapsUrl}" target="_blank" class="btn btn-outline">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Voir sur Maps
+          </a>
+          ${(()=>{
+            if (!r.website) {
+              const q = encodeURIComponent(r.title + ' ' + r.city + ' site web');
+              return `<a href="https://www.google.com/search?q=${q}" target="_blank" class="btn btn-ghost" style="opacity:.6;" title="Pas de site renseigné sur Maps">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Chercher site
+              </a>`;
+            }
+            const SOCIAL = ['instagram.com','facebook.com','fb.com','twitter.com','tiktok.com','linktr.ee'];
+            const DELIVERY = ['ubereats.com','deliveroo.fr','justeat.fr','lafourchette.com','thefork.com'];
+            const href = r.website.startsWith('http') ? r.website : 'https://'+r.website;
+            const isSocial   = SOCIAL.some(d => r.website.includes(d));
+            const isDelivery = DELIVERY.some(d => r.website.includes(d));
+            if (isSocial || isDelivery) {
+              const label = r.website.includes('facebook') ? 'Facebook'
+                          : r.website.includes('instagram') ? 'Instagram'
+                          : r.website.includes('tiktok') ? 'TikTok'
+                          : r.website.includes('ubereats') ? 'Uber Eats'
+                          : r.website.includes('deliveroo') ? 'Deliveroo'
+                          : 'Lien externe';
+              const q = encodeURIComponent(r.title + ' ' + r.city + ' site web');
+              return `<a href="${href}" target="_blank" class="btn btn-ghost" style="opacity:.7;" title="${label} — pas un site web">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                ${label}
+              </a>
+              <a href="https://www.google.com/search?q=${q}" target="_blank" class="btn btn-ghost" style="opacity:.6;" title="Chercher le vrai site">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Chercher site
+              </a>`;
+            }
+            return `<a href="${href}" target="_blank" class="btn btn-ghost">
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              Site web
+            </a>`;
+          })()}
+        </div>
+
+      </div>`;
+
+    document.getElementById('emptyState').style.display = 'none';
+    const dc = document.getElementById('detailContent');
+    dc.style.display = 'block';
+    dc.innerHTML = html;
+  }
+
+  function filterList(q) {
+    q = q.toLowerCase().trim();
+    document.querySelectorAll('.resto-card').forEach(card => {
+      const name = card.dataset.name || '';
+      const cat  = card.dataset.category || '';
+      card.style.display = (!q || name.includes(q) || cat.includes(q)) ? '' : 'none';
+    });
+    document.querySelectorAll('.list-section-label').forEach(label => {
+      label.style.display = '';
+    });
+  }
+
+  function setService(s) {
+    // Extensible quand KDS/Bornes seront disponibles
+  }
+
+  // Sélectionner le premier automatiquement
+  if (DATA.length > 0) {
+    setTimeout(() => selectResto(DATA[0].id), 80);
+  }
+</script>
+
+</body>
+</html>

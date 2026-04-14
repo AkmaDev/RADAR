@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ lead.title }} — Fiche lead</title>
+<style>
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --bg:           #f0efed;
+  --bg-primary:   #ffffff;
+  --bg-secondary: #f5f5f4;
+  --bg-info:      #E8F1FB;
+  --bg-warning:   #FEF3DC;
+  --bg-danger:    #FCEBEB;
+  --bg-success:   #EAF3DE;
+  --text:         #1a1a1a;
+  --text-2:       #555555;
+  --text-3:       #888888;
+  --info:         #1D5FA6;
+  --warning:      #854F0B;
+  --danger:       #A32D2D;
+  --success:      #3B6D11;
+  --border:       #e5e5e4;
+  --border-2:     #d0d0ce;
+  --r-sm: 4px; --r-md: 6px; --r-lg: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { font-family: var(--font-sans); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* Topbar */
+.topbar {
+  background: var(--bg-primary); border-bottom: 0.5px solid var(--border);
+  padding: 11px 24px; display: flex; align-items: center; gap: 12px;
+  position: sticky; top: 0; z-index: 10;
+}
+.back { font-size: 13px; color: var(--info); text-decoration: none; }
+.back:hover { text-decoration: underline; }
+.topbar-name { font-size: 15px; font-weight: 500; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.badge { font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: var(--r-md); white-space: nowrap; }
+.badge-hot  { background: var(--bg-danger);  color: var(--danger); }
+.badge-warm { background: var(--bg-warning); color: var(--warning); }
+.badge-ok   { background: var(--bg-success); color: var(--success); }
+.badge-sent { background: var(--bg-success); color: var(--success); }
+
+/* Layout */
+.page { max-width: 900px; margin: 20px auto; padding: 0 20px 60px; display: flex; flex-direction: column; gap: 14px; }
+
+/* Two-column grid on wider screens */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+
+/* Card */
+.card { background: var(--bg-primary); border: 0.5px solid var(--border); border-radius: var(--r-lg); padding: 16px 18px; }
+.card-title {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.07em; color: var(--text-3); margin-bottom: 12px;
+}
+
+/* Hero card */
+.hero { display: flex; gap: 16px; align-items: flex-start; }
+.hero-thumb {
+  width: 80px; height: 80px; border-radius: var(--r-md); object-fit: cover;
+  flex-shrink: 0; background: var(--bg-secondary);
+}
+.hero-thumb-placeholder {
+  width: 80px; height: 80px; border-radius: var(--r-md); flex-shrink: 0;
+  background: #e8e8e6; display: flex; align-items: center;
+  justify-content: center; font-size: 26px; font-weight: 700;
+  color: #999; text-transform: uppercase; letter-spacing: -1px;
+}
+.hero-body { flex: 1; }
+.hero-name { font-size: 18px; font-weight: 600; margin-bottom: 3px; }
+.hero-category { font-size: 12px; color: var(--text-3); margin-bottom: 10px; }
+.hero-meta { display: flex; flex-wrap: wrap; gap: 10px 20px; }
+.meta { font-size: 12px; color: var(--text-2); display: flex; align-items: center; gap: 5px; }
+.meta strong { color: var(--text); }
+.meta a { color: var(--info); text-decoration: none; }
+.meta a:hover { text-decoration: underline; }
+.meta.missing { color: var(--text-3); font-style: italic; }
+.gmap-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; padding: 4px 10px; border-radius: var(--r-md);
+  background: var(--bg-info); color: var(--info); text-decoration: none;
+  border: 0.5px solid transparent; margin-top: 10px;
+}
+.gmap-btn:hover { opacity: 0.85; }
+
+/* Score */
+.score-total-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 14px; }
+.score-big { font-size: 30px; font-weight: 700; }
+.score-sub { font-size: 12px; color: var(--text-3); }
+.bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+.bar-lbl { font-size: 12px; color: var(--text-2); width: 80px; flex-shrink: 0; }
+.bar-track { flex: 1; height: 8px; background: var(--bg-secondary); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; }
+.bar-profil { background: #378ADD; }
+.bar-sms    { background: #EF9F27; }
+.bar-total  { background: var(--text); height: 10px; }
+.bar-val { font-size: 12px; font-weight: 500; width: 44px; text-align: right; flex-shrink: 0; }
+
+/* Score detail breakdown */
+.score-toggle {
+  font-size: 11px; color: var(--info); cursor: pointer; background: none;
+  border: none; padding: 6px 0 0; font-family: var(--font-sans);
+  display: flex; align-items: center; gap: 4px;
+}
+.score-toggle:hover { text-decoration: underline; }
+.score-breakdown { display: none; margin-top: 10px; }
+.score-breakdown.open { display: block; }
+.sd-section { margin-bottom: 8px; }
+.sd-section-lbl {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.07em; color: var(--text-3); margin-bottom: 5px;
+}
+.sd-row {
+  display: flex; align-items: center; gap: 7px; padding: 3px 0;
+  border-bottom: 0.5px solid var(--border);
+}
+.sd-row:last-child { border-bottom: none; }
+.sd-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.sd-active   .sd-dot { background: #378ADD; }
+.sd-inactive .sd-dot { background: var(--border-2); }
+.sd-unavail  .sd-dot { background: #e0e0de; border: 1px dashed var(--border-2); }
+.sd-malus    .sd-dot { background: #e8a0a0; }
+.sd-label {
+  flex: 1; font-size: 11px;
+}
+.sd-active   .sd-label { color: var(--text); }
+.sd-inactive .sd-label { color: var(--text-3); }
+.sd-unavail  .sd-label { color: #ccc; font-style: italic; }
+.sd-malus    .sd-label { color: var(--danger); }
+.sd-pts {
+  font-size: 11px; font-weight: 600; min-width: 32px; text-align: right;
+}
+.sd-active   .sd-pts { color: #378ADD; }
+.sd-inactive .sd-pts { color: var(--border-2); }
+.sd-unavail  .sd-pts { color: #ddd; }
+.sd-malus    .sd-pts { color: var(--danger); }
+.sd-tag {
+  font-size: 10px; padding: 1px 5px; border-radius: 3px;
+  background: var(--bg-warning); color: var(--warning); white-space: nowrap;
+}
+.sd-tag-blocked { background: #fce8e8; color: var(--danger); }
+
+/* Signaux */
+.signal-list { display: flex; flex-direction: column; gap: 5px; }
+.sig { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.sig-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.sig-on  .sig-dot { background: #EF9F27; }
+.sig-off .sig-dot { background: var(--border-2); }
+.sig-on  span { color: var(--text); }
+.sig-off span { color: var(--text-3); }
+
+/* Services */
+.service-list { display: flex; flex-direction: column; gap: 5px; }
+.svc { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.svc-icon { font-size: 13px; width: 18px; text-align: center; }
+.svc-on  span { color: var(--text); }
+.svc-off span { color: var(--text-3); text-decoration: line-through; }
+
+/* Horaires */
+.hours-list { display: flex; flex-direction: column; gap: 4px; }
+.hour-row { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; border-bottom: 0.5px solid var(--border); }
+.hour-day { color: var(--text-2); }
+.hour-time { color: var(--text); font-weight: 500; }
+.peak-badge {
+  display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 10px;
+  background: var(--bg-warning); color: var(--warning); margin-top: 10px;
+}
+
+/* Message */
+.ss-chip {
+  display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px;
+  background: var(--bg-info); color: var(--info); margin-bottom: 10px;
+}
+.msg-box {
+  font-size: 13px; line-height: 1.65; color: var(--text-2);
+  background: var(--bg-secondary); border-radius: var(--r-md);
+  padding: 12px 14px; border-left: 3px solid #378ADD;
+  white-space: pre-wrap;
+}
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.btn {
+  font-size: 12px; padding: 6px 14px; border-radius: var(--r-md); cursor: pointer;
+  border: 0.5px solid var(--border-2); background: transparent; color: var(--text-2);
+  font-family: var(--font-sans); text-decoration: none; display: inline-flex; align-items: center;
+  gap: 5px; white-space: nowrap;
+}
+.btn:hover { background: var(--bg-secondary); }
+.btn-send    { background: #1a1a1a; color: #fff; border-color: transparent; }
+.btn-send:hover { background: #333; }
+.btn-copy    { background: var(--bg-secondary); color: var(--text); }
+.btn-hubspot { background: #FF7A59; color: #fff; border-color: transparent; }
+.btn-hubspot:hover { background: #e8674a; }
+.btn-hubspot:disabled { opacity: 0.6; cursor: not-allowed; }
+#hs-result { font-size: 12px; margin-top: 8px; display: none; }
+
+/* History */
+.hist-list { display: flex; flex-direction: column; gap: 5px; }
+.hist-item { font-size: 12px; color: var(--text-2); display: flex; align-items: center; gap: 8px; }
+.hist-item::before { content:""; width:6px; height:6px; border-radius:50%; background:var(--text-3); flex-shrink:0; }
+.empty-state { font-size: 12px; color: var(--text-3); font-style: italic; }
+
+/* Data table */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table td { font-size: 12px; padding: 5px 0; border-bottom: 0.5px solid var(--border); vertical-align: top; }
+.data-table td:first-child { color: var(--text-3); width: 45%; padding-right: 12px; }
+.data-table td:last-child { color: var(--text); font-weight: 500; word-break: break-all; }
+.data-table td.empty { color: var(--text-3); font-weight: 400; font-style: italic; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="{{ back_url }}" class="back">← Retour</a>
+  <span class="topbar-name">{{ lead.title }}</span>
+  <span class="badge {{ lead._badge_class }}">{{ lead._badge_label }}</span>
+  {% if lead._status == 'sent' %}<span class="badge badge-sent">✓ Envoyé</span>{% endif %}
+</div>
+
+<div class="page">
+
+  <!-- ── Hero ── -->
+  <div class="card">
+    <div class="hero">
+      {% if lead._thumbnail %}
+        <img class="hero-thumb" src="{{ lead._thumbnail }}" alt="{{ lead.title }}" onerror="this.style.display='none'">
+      {% else %}
+        <div class="hero-thumb-placeholder">{{ lead.title[:2] if lead.title else '?' }}</div>
+      {% endif %}
+      <div class="hero-body">
+        <div class="hero-name">{{ lead.title }}</div>
+        {% if lead._category %}<div class="hero-category">{{ lead._category }}</div>{% endif %}
+        <div class="hero-meta">
+          {% if lead.address and lead.address != 'nan' %}
+          <div class="meta">📍 <strong>{{ lead.address }}</strong></div>
+          {% endif %}
+
+          {% if lead.phone and lead.phone != 'nan' %}
+          <div class="meta">📞 <strong><a href="tel:{{ lead.phone }}">{{ lead.phone }}</a></strong></div>
+          {% else %}
+          <div class="meta missing">📞 Numéro non trouvé</div>
+          {% endif %}
+
+          {% if lead.website and lead.website != 'nan' %}
+          <div class="meta">🌐 <a href="{{ lead.website }}" target="_blank">{{ lead.website }}</a></div>
+          {% else %}
+          <div class="meta missing">🌐 Pas de site web</div>
+          {% endif %}
+
+          {% if lead.review_rating and lead.review_rating != 'nan' %}
+          <div class="meta">⭐ <strong>{{ lead.review_rating }}/5</strong>
+            {% if lead.review_count and lead.review_count != 'nan' %}({{ lead.review_count }} avis){% endif %}
+          </div>
+          {% endif %}
+
+          {% if lead._price_range %}
+          <div class="meta">💶 <strong>{{ lead._price_range }}</strong></div>
+          {% endif %}
+
+          {% set dda = lead.date_debut_activite | string %}
+          {% if dda and dda != 'nan' %}
+          <div class="meta">📅 Ouvert le <strong>{{ dda[:10] }}</strong> — {{ lead._age }}</div>
+          {% endif %}
+
+          {% if lead._menu_link %}
+          <div class="meta">🍴 <a href="{{ lead._menu_link }}" target="_blank">Voir le menu</a></div>
+          {% endif %}
+        </div>
+
+        {% if lead._google_link %}
+        <a href="{{ lead._google_link }}" target="_blank" class="gmap-btn">🗺 Voir sur Google Maps</a>
+        {% elif lead._latitude and lead._longitude %}
+        <a href="https://maps.google.com/?q={{ lead._latitude }},{{ lead._longitude }}" target="_blank" class="gmap-btn">🗺 Voir sur Google Maps</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+
+    <!-- ── Scoring ── -->
+    <div class="card">
+      <div class="card-title">Scoring</div>
+      <div class="score-total-row">
+        <span class="score-big">{{ lead.score_total }}</span>
+        <span class="score-sub">pts sur 168</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-lbl">Profil</span>
+        <div class="bar-track"><div class="bar-fill bar-profil" style="width:{{ pct_profil }}%"></div></div>
+        <span class="bar-val">{{ lead.score_profil }}/98</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-lbl">Signaux</span>
+        <div class="bar-track"><div class="bar-fill bar-sms" style="width:{{ pct_sms }}%"></div></div>
+        <span class="bar-val">{{ lead.score_sms }}/70</span>
+      </div>
+      <div class="bar-row" style="margin-top:4px">
+        <span class="bar-lbl" style="font-weight:600">Total</span>
+        <div class="bar-track" style="height:10px"><div class="bar-fill bar-total" style="width:{{ pct_total }}%;height:10px"></div></div>
+        <span class="bar-val" style="font-weight:700">{{ lead.score_total }}</span>
+      </div>
+
+      {% if score_detail %}
+      <button class="score-toggle" onclick="toggleBreakdown(this)" aria-expanded="false">
+        <span class="toggle-arrow">▸</span> Détail du score
+      </button>
+      <div class="score-breakdown">
+
+        {% if score_detail.profil %}
+        <div class="sd-section">
+          <div class="sd-section-lbl">Score Profil — fit produit</div>
+          {% for item in score_detail.profil %}
+          {% if item.get('unavailable') %}
+            {% set row_cls = 'sd-unavail' %}
+          {% elif item.get('type') == 'malus' and item.active %}
+            {% set row_cls = 'sd-malus' %}
+          {% elif item.active %}
+            {% set row_cls = 'sd-active' %}
+          {% else %}
+            {% set row_cls = 'sd-inactive' %}
+          {% endif %}
+          <div class="sd-row {{ row_cls }}">
+            <span class="sd-dot"></span>
+            <span class="sd-label">{{ item.label }}
+              {% if item.get('blocked_by') %}
+              <span class="sd-tag sd-tag-blocked">Couvert : {{ item.blocked_by }}</span>
+              {% endif %}
+            </span>
+            {% if item.get('source') and not item.get('unavailable') %}
+            <span style="font-size:10px;color:var(--text-3);margin-right:4px">{{ item.source }}</span>
+            {% endif %}
+            <span class="sd-pts">
+              {% if item.active %}+{{ item.pts }}{% elif item.get('type') == 'malus' %}{{ item.max_pts }}{% elif item.get('unavailable') %}?{% else %}+{{ item.max_pts }}{% endif %}
+            </span>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if score_detail.sms %}
+        <div class="sd-section">
+          <div class="sd-section-lbl">Score Signaux — bon moment ?</div>
+          {% for item in score_detail.sms %}
+          {% if item.get('unavailable') %}
+            {% set row_cls = 'sd-unavail' %}
+          {% elif item.active %}
+            {% set row_cls = 'sd-active' %}
+          {% else %}
+            {% set row_cls = 'sd-inactive' %}
+          {% endif %}
+          <div class="sd-row {{ row_cls }}">
+            <span class="sd-dot"></span>
+            <span class="sd-label">{{ item.label }}</span>
+            {% if item.get('source') and not item.get('unavailable') %}
+            <span style="font-size:10px;color:var(--text-3);margin-right:4px">{{ item.source }}</span>
+            {% endif %}
+            <span class="sd-pts">
+              {% if item.active %}+{{ item.pts }}{% elif item.get('unavailable') %}?{% else %}+{{ item.max_pts }}{% endif %}
+            </span>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+      </div><!-- /score-breakdown -->
+      {% endif %}
+
+    </div>
+
+    <!-- ── Signaux commerciaux ── -->
+    <div class="card">
+      <div class="card-title">Signaux commerciaux</div>
+      <div class="signal-list">
+        {% for label, active in signaux_actifs %}
+        <div class="sig sig-on"><span class="sig-dot"></span><span>{{ label }}</span></div>
+        {% endfor %}
+        {% for label, active in signaux_inactifs %}
+        <div class="sig sig-off"><span class="sig-dot"></span><span>{{ label }}</span></div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- ── Services disponibles ── -->
+    {% if lead._services %}
+    <div class="card">
+      <div class="card-title">Services disponibles</div>
+      <div class="service-list">
+        {% set icons = {
+          'Services sur place': '🪑',
+          'Repas sur place': '🪑',
+          'Vente à emporter': '🥡',
+          'Livraison': '🛵',
+          'Commande en ligne': '📱',
+          'Réservations': '📅',
+          'Repas rapide': '⚡',
+        } %}
+        {% for svc in lead._services %}
+        <div class="svc {% if svc.enabled %}svc-on{% else %}svc-off{% endif %}">
+          <span class="svc-icon">{{ icons.get(svc.name, '·') }}</span>
+          <span>{{ svc.name }}</span>
+          {% if not svc.enabled %}<span style="font-size:11px;color:var(--text-3);margin-left:auto">Non</span>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- ── Horaires ── -->
+    {% if lead._open_hours %}
+    <div class="card">
+      <div class="card-title">Horaires d'ouverture</div>
+      <div class="hours-list">
+        {% for h in lead._open_hours %}
+          {% set parts = h.split(' : ') %}
+          <div class="hour-row">
+            <span class="hour-day">{{ parts[0] }}</span>
+            <span class="hour-time">{{ parts[1] if parts|length > 1 else h }}</span>
+          </div>
+        {% endfor %}
+      </div>
+      {% if lead._popular_peak %}
+      <div class="peak-badge">📊 {{ lead._popular_peak }}</div>
+      {% endif %}
+      {% if lead.meilleur_moment_appel and lead.meilleur_moment_appel not in ('nan','None','') %}
+      <div class="peak-badge" style="background:var(--bg-info);color:var(--info);margin-top:6px">📞 Meilleur moment pour appeler : {{ lead.meilleur_moment_appel }}</div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div><!-- /grid-2 -->
+
+  <!-- ── Fiche établissement (GOSOM enrichi) ── -->
+  {% set _has_gosom = lead._dietary_options or lead._payment_methods or lead._signal_wifi
+                      or lead._signal_terrasse or lead._signal_parking or lead._thefork_url
+                      or lead._email_from_website or lead._description_text
+                      or lead._signal_vegetarien or lead._signal_halal or lead._signal_vegan
+                      or lead._signal_especes or lead._signal_reservation_ok %}
+  {% if _has_gosom %}
+  <div class="card">
+    <div class="card-title">Fiche établissement</div>
+    <table class="data-table">
+
+      {% if lead._description_text %}
+      <tr>
+        <td>Description</td>
+        <td style="font-style:italic;font-weight:400">{{ lead._description_text }}</td>
+      </tr>
+      {% endif %}
+
+      {% if lead._dietary_options %}
+      <tr>
+        <td>Régimes</td>
+        <td>{{ lead._dietary_options }}</td>
+      </tr>
+      {% endif %}
+
+      {% if lead._payment_methods %}
+      <tr>
+        <td>Paiements</td>
+        <td>{{ lead._payment_methods }}</td>
+      </tr>
+      {% endif %}
+
+      {% if lead._signal_especes %}
+      <tr>
+        <td>Mode paiement</td>
+        <td style="color:var(--warning);font-weight:500">⚠ Espèces uniquement — pas de carte détectée</td>
+      </tr>
+      {% endif %}
+
+      <!-- Services (icônes booléens) -->
+      {% set _services_row = [] %}
+      {% if lead._signal_wifi %}{% set _ = _services_row.append("📶 Wi-Fi") %}{% endif %}
+      {% if lead._signal_terrasse %}{% set _ = _services_row.append("🌿 Terrasse") %}{% endif %}
+      {% if lead._signal_parking %}{% set _ = _services_row.append("🅿 Parking") %}{% endif %}
+      {% if lead._signal_vegetarien %}{% set _ = _services_row.append("🥗 Végétarien") %}{% endif %}
+      {% if lead._signal_vegan %}{% set _ = _services_row.append("🌱 Vegan") %}{% endif %}
+      {% if lead._signal_halal %}{% set _ = _services_row.append("☪ Halal") %}{% endif %}
+      {% if lead._signal_reservation_ok %}{% set _ = _services_row.append("📅 Réservations") %}{% endif %}
+      {% if _services_row %}
+      <tr>
+        <td>Équipements</td>
+        <td>{{ _services_row | join("  ·  ") }}</td>
+      </tr>
+      {% endif %}
+
+      {% if lead._email_from_website %}
+      <tr>
+        <td>Email (site web)</td>
+        <td><a href="mailto:{{ lead._email_from_website }}" style="color:var(--info)">{{ lead._email_from_website }}</a></td>
+      </tr>
+      {% endif %}
+
+      {% if lead._thefork_url %}
+      <tr>
+        <td>TheFork</td>
+        <td><a href="{{ lead._thefork_url }}" target="_blank" style="color:var(--info)">Voir la fiche →</a></td>
+      </tr>
+      {% endif %}
+
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- ── Message de prospection ── -->
+  <div class="card">
+    <div class="card-title">Message de prospection</div>
+    {% if lead.solution_gap and lead.solution_gap != 'nan' %}
+    <span class="ss-chip" style="background:var(--bg-secondary);color:var(--text-2);margin-right:6px">Gap : {{ lead.solution_gap.replace('_',' ') }}</span>
+    {% endif %}
+    {% if lead.ss_match and lead.ss_match != 'nan' %}
+    <span class="ss-chip">SS : {{ lead.ss_match }}</span>
+    {% endif %}
+    <div class="msg-box" id="msg-text">{{ lead._message_display }}</div>
+    <div class="actions">
+      {% if lead._status != 'sent' %}
+      <form method="POST" action="/action">
+        <input type="hidden" name="action"   value="send">
+        <input type="hidden" name="lead_key" value="{{ lead._key }}">
+        <input type="hidden" name="sidebar"  value="urgents">
+        <input type="hidden" name="pill"     value="tous">
+        <input type="hidden" name="page"     value="1">
+        <button type="submit" class="btn btn-send">Marquer envoyé</button>
+      </form>
+      {% endif %}
+      <button class="btn btn-copy" onclick="copyMessage()">Copier le message</button>
+      {% if lead.phone and lead.phone != 'nan' %}
+      <a href="https://wa.me/{{ lead.phone | replace(' ','') | replace('+','') | replace('-','') }}" target="_blank" class="btn">WhatsApp</a>
+      {% endif %}
+      <button class="btn btn-hubspot" id="hs-btn" onclick="pushHubspot('{{ lead._key }}')">HubSpot</button>
+      <a href="/?sidebar=urgents&pill=tous&edit={{ lead._key }}" class="btn">Corriger</a>
+      {% if lead._status != 'ignored' %}
+      <form method="POST" action="/action">
+        <input type="hidden" name="action"   value="ignore">
+        <input type="hidden" name="lead_key" value="{{ lead._key }}">
+        <input type="hidden" name="sidebar"  value="urgents">
+        <input type="hidden" name="pill"     value="tous">
+        <input type="hidden" name="page"     value="1">
+        <button type="submit" class="btn">Ignorer</button>
+      </form>
+      {% endif %}
+    </div>
+    <div id="hs-result" style="display:none;margin-top:8px;font-size:12px"></div>
+  </div>
+
+  <!-- ── Historique ── -->
+  <div class="card">
+    <div class="card-title">Historique des actions</div>
+    {% if history %}
+    <div class="hist-list">
+      {% for event in history %}<div class="hist-item">{{ event }}</div>{% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">Aucune action enregistrée pour ce lead.</div>
+    {% endif %}
+  </div>
+
+  <!-- ── Toutes les données ── -->
+  <div class="card">
+    <div class="card-title">Toutes les données collectées</div>
+    <table class="data-table">
+      {% set rows = [
+        ('Nom', lead.title),
+        ('Catégorie', lead._category),
+        ('Adresse', lead.address),
+        ('Téléphone', lead.phone),
+        ('Site web', lead.website),
+        ('Lien Google Maps', lead._google_link),
+        ('Note Google', lead.review_rating),
+        ("Nombre d'avis", lead.review_count),
+        ('Date ouverture', lead.date_debut_activite),
+        ('Ancienneté', lead._age),
+        ('Prix', lead._price_range),
+        ('Lien menu', lead._menu_link),
+        ('Score Profil', lead.score_profil),
+        ('Score Signaux', lead.score_sms),
+        ('Score Total', lead.score_total),
+        ('Label', lead.label),
+        ('SS matchée', lead.ss_match),
+        ('Meilleur moment appel', lead.meilleur_moment_appel),
+        ('Modifié cette semaine', lead.modifie_cette_semaine),
+        ('Latitude', lead._latitude),
+        ('Longitude', lead._longitude),
+      ] %}
+      {% for key, val in rows %}
+      <tr>
+        <td>{{ key }}</td>
+        {% set sval = val | string %}
+        {% if sval and sval not in ('nan', 'None', '') %}
+          {% if sval.startswith('http') %}
+          <td><a href="{{ sval }}" target="_blank" style="color:var(--info)">{{ sval[:60] }}{% if sval|length > 60 %}…{% endif %}</a></td>
+          {% else %}
+          <td>{{ sval }}</td>
+          {% endif %}
+        {% else %}
+        <td class="empty">—</td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+function toggleBreakdown(btn) {
+  const panel = btn.nextElementSibling;
+  const arrow = btn.querySelector('.toggle-arrow');
+  const isOpen = panel.classList.toggle('open');
+  arrow.textContent = isOpen ? '▾' : '▸';
+  btn.setAttribute('aria-expanded', isOpen);
+}
+
+function copyMessage() {
+  const text = document.getElementById('msg-text').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.btn-copy');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ Copié !';
+    btn.style.background = '#EAF3DE';
+    btn.style.color = '#3B6D11';
+    setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; btn.style.color = ''; }, 2000);
+  });
+}
+
+function pushHubspot(key) {
+  const btn = document.getElementById('hs-btn');
+  const result = document.getElementById('hs-result');
+  btn.disabled = true;
+  btn.innerHTML = '⏳ Envoi…';
+  result.style.display = 'none';
+
+  fetch('/push_hubspot/' + key, { method: 'POST' })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === 'ok') {
+        btn.innerHTML = '✓ Dans HubSpot';
+        btn.style.background = '#3B6D11';
+        result.style.display = 'block';
+        if (data.deal_url) {
+          result.innerHTML = '<a href="' + data.deal_url + '" target="_blank" style="color:var(--info);font-size:12px">Ouvrir le deal dans HubSpot →</a>';
+        } else {
+          result.innerHTML = '<span style="color:var(--success)">Contact ' + data.contact_id + ' · Deal ' + data.deal_id + ' créés</span>';
+        }
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = '→ HubSpot';
+        result.style.display = 'block';
+        result.innerHTML = '<span style="color:var(--danger)">Erreur : ' + (data.error || 'inconnue') + '</span>';
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerHTML = '→ HubSpot';
+      result.style.display = 'block';
+      result.innerHTML = '<span style="color:var(--danger)">Erreur réseau</span>';
+    });
+}
+</script>
+</body>
+</html>

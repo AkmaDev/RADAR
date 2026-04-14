@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: scout-qualification
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn v2_app:app
+    plan: free
